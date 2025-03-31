@@ -1,0 +1,19 @@
+{
+  "name": "user-activity-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Kirollos Rafik",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "kafka-node": "^5.0.0",
+    "mongoose": "^8.13.1"
+  },
+  "scripts": {
+    "dev:producer": "nodemon src/producer/activity-api.js",
+    "dev:consumer": "nodemon src/consumer/consumer.js",
+    "dev:api": "nodemon src/api/server.js"
+  }
+}

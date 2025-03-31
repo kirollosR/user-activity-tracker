@@ -1,0 +1,83 @@
+version: '3.8'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./data/kafka:/var/run/docker.sock
+    environment:
+      - KAFKA_ADVERTISED_HOST_NAME=kafka
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    depends_on:
+      - zookeeper
+
+  mongo_activity:
+    image: mongo:latest
+    container_name: mongo_activity
+    ports:
+      - "27018:27017"
+    volumes:
+      - activity-volume:/data/db
+
+  producer:
+    container_name: producer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: node src/producer/activity-api.js
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - PORT=3001
+      - MONGO_URL=mongodb://mongo_activity:27017/user-activity
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=user-activity
+    depends_on:
+      - kafka
+      - mongo_activity
+
+  consumer:
+    container_name: consumer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: node src/consumer/consumer.js
+    volumes:
+      - ./src:/app/src
+    environment:
+      - MONGO_URL=mongodb://mongo_activity:27017/user-activity
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=user-activity
+    depends_on:
+      - kafka
+      - mongo_activity
+
+  api:
+    container_name: api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: node src/api/server.js
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+    environment:
+      - PORT=3000
+      - MONGO_URL=mongodb://mongo_activity:27017/user-activity
+    depends_on:
+      - mongo_activity
+
+volumes:
+  activity-volume:
+    driver: local
