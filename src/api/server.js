@@ -1,5 +1,5 @@
 const express = require('express');
-const Activity = require('../domain/activity');
+const { Activity } = require('../infrastructure/mongodb');
 const app = express();
 
 app.get('/health', (req, res) => {

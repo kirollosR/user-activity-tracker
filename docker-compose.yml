@@ -28,7 +28,7 @@ services:
       - activity-volume:/data/db
 
   producer:
-    container_name: producer
+    container_name: producer1
     build:
       context: .
       dockerfile: Dockerfile
